@@ -26,7 +26,8 @@ class RawPhoneEvent {
   RawPhoneEvent(this.id, this.phoneNumber, this.type);
 
   /// Whether this event represents a new call
-  bool get isNewCall => type == RawEventType.inbound || type == RawEventType.outbound;
+  bool get isNewCall =>
+      type == RawEventType.inbound || type == RawEventType.outbound;
 
   @override
   String toString() {
@@ -60,7 +61,8 @@ class PhoneCallEvent {
   /// @non_null
   final DateTime timestamp;
 
-  PhoneCallEvent(this.call, this.status, [DateTime? eventDate]) : timestamp = eventDate ?? DateTime.now();
+  PhoneCallEvent(this.call, this.status, [DateTime? eventDate])
+      : timestamp = eventDate ?? DateTime.now();
 
   @override
   String toString() {
@@ -139,6 +141,7 @@ class PhoneCall {
         return event;
       }
     }
+    return null;
   }
 
   /// The duration of this call.  This duration will represent the elasped time, until the call
@@ -165,8 +168,14 @@ class PhoneCall {
   /// - It's in a dialing state for more than 30 seconds
   /// - It's in an active state for more than 8 hours
   bool get isExpired {
-    if (status == PhoneCallStatus.dialing && sinceNow(startTime).inSeconds > 30) return true;
-    if (status == PhoneCallStatus.connected && sinceNow(startTime).inHours > 8) return true;
+    if (status == PhoneCallStatus.dialing &&
+        sinceNow(startTime).inSeconds > 30) {
+      return true;
+    }
+    if (status == PhoneCallStatus.connected &&
+        sinceNow(startTime).inHours > 8) {
+      return true;
+    }
     return false;
   }
 
@@ -176,7 +185,9 @@ class PhoneCall {
   /// Whether this call can be linked to the provided event.  This check is fairly loose, it makes sure that
   /// the values aren't for two disparate ids, phone numbers, and that the status is a subsequent status
   bool canBeLinked(RawPhoneEvent event) {
-    if (event.phoneNumber != null && phoneNumber != null && event.phoneNumber != phoneNumber) return false;
+    if (event.phoneNumber != null &&
+        phoneNumber != null &&
+        event.phoneNumber != phoneNumber) return false;
     if (callId != null && callId != event.id) return false;
     if (isNotBefore(status, event.type)) return false;
 
@@ -185,7 +196,8 @@ class PhoneCall {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is PhoneCall && runtimeType == other.runtimeType && id == other.id;
+      identical(this, other) ||
+      other is PhoneCall && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -208,12 +220,27 @@ class PhoneCall {
 }
 
 enum RawEventType { inbound, outbound, connected, disconnected }
-enum PhoneCallStatus { ringing, dialing, cancelled, error, connecting, connected, timedOut, disconnected }
+
+enum PhoneCallStatus {
+  ringing,
+  dialing,
+  cancelled,
+  error,
+  connecting,
+  connected,
+  timedOut,
+  disconnected
+}
+
 enum PhoneCallPlacement { inbound, outbound }
 
 const Map<RawEventType, Set<PhoneCallStatus>> priorStatuses = {
   RawEventType.outbound: {PhoneCallStatus.dialing},
-  RawEventType.connected: {PhoneCallStatus.connecting, PhoneCallStatus.ringing, PhoneCallStatus.dialing},
+  RawEventType.connected: {
+    PhoneCallStatus.connecting,
+    PhoneCallStatus.ringing,
+    PhoneCallStatus.dialing
+  },
   RawEventType.inbound: {},
   RawEventType.disconnected: {
     PhoneCallStatus.connecting,
@@ -223,7 +250,8 @@ const Map<RawEventType, Set<PhoneCallStatus>> priorStatuses = {
   },
 };
 
-bool isNotBefore(PhoneCallStatus status, RawEventType type) => !isBefore(status, type);
+bool isNotBefore(PhoneCallStatus status, RawEventType type) =>
+    !isBefore(status, type);
 
 bool isBefore(PhoneCallStatus status, RawEventType type) {
   return priorStatuses[type]?.contains(status) == true;
