@@ -7,11 +7,6 @@ allprojects {
 
 rootProject.buildDir = '../build'
 subprojects {
-    tasks.withType(ScalaCompile) {
-        configure(scalaCompileOptions.forkOptions) {
-            jvmArgs = ['-Xss4m', '-Xmx2048m']
-        }
-    }
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
