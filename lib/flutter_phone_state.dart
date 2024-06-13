@@ -65,7 +65,8 @@ class FlutterPhoneState with WidgetsBindingObserver {
     if (event.id != null) {
       matching = firstOrNull(_calls, (c) => c?.callId == event.id);
     }
-    matching ??= lastOrNull(_calls, (call) => call?.canBeLinked(event) ?? false);
+    matching ??=
+        lastOrNull(_calls, (call) => call?.canBeLinked(event) ?? false);
     if (matching != null) {
       // Link them together for future reference
       matching.callId = event.id;
@@ -82,7 +83,8 @@ class FlutterPhoneState with WidgetsBindingObserver {
       Future.delayed(Duration(seconds: 1), () {
         final expired = lastOrNull<PhoneCall?>(_calls, (PhoneCall? c) {
           if (c != null) {
-            return c.status == PhoneCallStatus.dialing && sinceNow(c.startTime).inSeconds < 30;
+            return c.status == PhoneCallStatus.dialing &&
+                sinceNow(c.startTime).inSeconds < 30;
           } else {
             return false;
           }
@@ -142,8 +144,10 @@ class FlutterPhoneState with WidgetsBindingObserver {
         status == PhoneCallStatus.error ||
         status == PhoneCallStatus.cancelled) {
       _log.info('Call is done: ${call.id}- Removing due to $status');
-      call.complete(status).then((event) {
-        _localEvents.add(event!);
+      call.complete(status).then((e) {
+        if (e != null) {
+          _localEvents.add(e);
+        }
       });
       _calls.removeWhere((existing) => existing == call);
     } else {
@@ -164,11 +168,17 @@ class FlutterPhoneState with WidgetsBindingObserver {
         _log.info('Adding a call to the stack: $event');
         matching = PhoneCall.start(
           event.phoneNumber,
-          event.type == RawEventType.inbound ? PhoneCallPlacement.inbound : PhoneCallPlacement.outbound,
+          event.type == RawEventType.inbound
+              ? PhoneCallPlacement.inbound
+              : PhoneCallPlacement.outbound,
           event.id,
         );
         _calls.add(matching);
-        _changeStatus(matching, matching.isInbound ? PhoneCallStatus.ringing : PhoneCallStatus.dialing);
+        _changeStatus(
+            matching,
+            matching.isInbound
+                ? PhoneCallStatus.ringing
+                : PhoneCallStatus.dialing);
         return;
       }
 
@@ -207,14 +217,16 @@ class FlutterPhoneState with WidgetsBindingObserver {
 }
 
 /// The event channel to receive native phone events
-final EventChannel _phoneStateCallEventChannel = EventChannel('co.sunnyapp/phone_events');
+final EventChannel _phoneStateCallEventChannel =
+    EventChannel('co.sunnyapp/phone_events');
 
 /// Native event stream, lazily created.  See [nativeEvents]
 Stream<RawPhoneEvent?>? _nativeEvents;
 
 /// A stream of [RawPhoneEvent] instances.  The stream only contains null values if there was an error
 Stream<RawPhoneEvent?> get _initializedNativeEvents {
-  _nativeEvents ??= _phoneStateCallEventChannel.receiveBroadcastStream().map((dyn) {
+  _nativeEvents ??=
+      _phoneStateCallEventChannel.receiveBroadcastStream().map((dyn) {
     try {
       if (dyn == null) return null;
       if (dyn is! Map) {
@@ -223,7 +235,8 @@ Stream<RawPhoneEvent?> get _initializedNativeEvents {
       }
       final event = (dyn as Map).cast();
       final eventType = _parseEventType(event['type'] as String);
-      return RawPhoneEvent(event['id'] as String, event['phoneNumber'] as String, eventType);
+      return RawPhoneEvent(
+          event['id'] as String, event['phoneNumber'], eventType);
     } catch (e, stack) {
       _log.severe('Error handling native event $e', e, stack);
       return null;
@@ -272,7 +285,9 @@ Future<LinkOpenResult> _openTelLink(String? appLink) async {
     return LinkOpenResult.invalidInput;
   }
   if (await canLaunch(appLink)) {
-    return (await launch(appLink)) ? LinkOpenResult.success : LinkOpenResult.failed;
+    return (await launch(appLink))
+        ? LinkOpenResult.success
+        : LinkOpenResult.failed;
   } else {
     return LinkOpenResult.unsupported;
   }
