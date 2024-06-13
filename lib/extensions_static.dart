@@ -1,15 +1,15 @@
 Duration sinceNow(DateTime self) => -(self.difference(DateTime.now()));
 
 X? find<X>(List<X?>? self, bool Function(X? input) filter) {
-  return self?.firstWhere(filter, orElse: () => null);
+  return self?.firstWhere(filter, orElse: () => null as X?);
 }
 
 X? lastOrNull<X>(List<X?>? self, bool Function(X? input) filter) {
-  return self?.lastWhere(filter, orElse: () => null);
+  return self?.lastWhere(filter, orElse: () => null as X?);
 }
 
 X? firstOrNull<X>(List<X?>? self, bool Function(X? input) filter) {
-  return self?.firstWhere(filter, orElse: () => null);
+  return self?.firstWhere(filter, orElse: () => null as X?);
 }
 
 String? truncate(String? self, int length) {
