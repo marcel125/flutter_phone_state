@@ -287,7 +287,7 @@ Future<LinkOpenResult> _openTelLink(String? appLink) async {
   }
   if (await canLaunch(appLink)) {
     final intent = AndroidIntent(
-      action: 'action_call',
+      action: 'android.intent.action.CALL',
       data: Uri.encodeFull(appLink),
     );
 
