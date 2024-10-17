@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -285,9 +286,18 @@ Future<LinkOpenResult> _openTelLink(String? appLink) async {
     return LinkOpenResult.invalidInput;
   }
   if (await canLaunch(appLink)) {
-    return (await launch(appLink))
-        ? LinkOpenResult.success
-        : LinkOpenResult.failed;
+    final intent = AndroidIntent(
+      action: 'action_call',
+      data: Uri.encodeFull(appLink),
+    );
+
+    final canHandleIntent = await intent.canResolveActivity();
+    if (canHandleIntent == true) {
+        await intent.launch();
+        return LinkOpenResult.success;
+    } else {
+        return LinkOpenResult.failed;
+    }
   } else {
     return LinkOpenResult.unsupported;
   }
